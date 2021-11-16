@@ -2,6 +2,9 @@
 === Kraken Decompressor for Windows ===
 Copyright (C) 2016, Powzix
 
+=== Kraken Decompressor for Linux ===
+Copyright (C) 2021, gammaparticle
+
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
