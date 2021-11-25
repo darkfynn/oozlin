@@ -30,3 +30,16 @@
 *.exe
 *.out
 *.app
+
+
+# Autotools files
+.deps
+Makefile.am
+Makefile.in
+aclocal.m4
+autom4te.cache/
+config.status
+config.log
+configure.ac
+
+
