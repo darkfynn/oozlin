@@ -3,7 +3,7 @@
 Copyright (C) 2016, Powzix
 
 === Kraken Decompressor for Linux ===
-Copyright (C) 2021, gammaparticle
+Copyright (C) 2021, gammaparticle (Fynn)
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -203,13 +203,15 @@ void FreeAligned(void *p) {
 
 uint32 BSR(uint32 x) {
   unsigned long index;
-  _BitScanReverse(&index, x);
+  //_BitScanReverse(&index, x);
+  index =  32 - __builtin_clz(x) - 1;
   return index;
 }
 
 uint32 BSF(uint32 x) {
   unsigned long index;
-  _BitScanForward(&index, x);
+  //_BitScanForward(&index, x);
+  index = __builtin_ctz(x);
   return index;
 }
 
@@ -302,7 +304,8 @@ int BitReader_ReadGamma(BitReader *bits) {
   int n;
   int r;
   if (bits->bits != 0) {
-    _BitScanReverse(&bitresult, bits->bits);
+    //_BitScanReverse(&bitresult, bits->bits);
+    bitresult = 32 - __builtin_clz(bits->bits) - 1;
     n = 31 - bitresult;
   } else {
     n = 32;
@@ -317,7 +320,8 @@ int BitReader_ReadGamma(BitReader *bits) {
 
 int CountLeadingZeros(uint32 bits) {
   unsigned long x;
-  _BitScanReverse(&x, bits);
+  //_BitScanReverse(&x, bits);
+  x = 32 - __builtin_clz(bits) - 1;
   return 31 - x;
 }
 
@@ -326,7 +330,8 @@ int BitReader_ReadGammaX(BitReader *bits, int forced) {
   unsigned long bitresult;
   int r;
   if (bits->bits != 0) {
-    _BitScanReverse(&bitresult, bits->bits);
+    //_BitScanReverse(&bitresult, bits->bits);
+    bitresult = 32 - __builtin_clz(bits->bits) - 1;
     int lz = 31 - bitresult;
     assert(lz < 24);
     r = (bits->bits >> (31 - lz - forced)) + ((lz - 1) << forced);
@@ -395,7 +400,8 @@ bool BitReader_ReadLength(BitReader *bits, uint32 *v) {
   unsigned long bitresult;
   int n;
   uint32 rv;
-  _BitScanReverse(&bitresult, bits->bits);
+  //_BitScanReverse(&bitresult, bits->bits);
+  bitresult = 32 - __builtin_clz(bits->bits) - 1;
   n = 31 - bitresult;
   if (n > 12) return false;
   bits->bitpos += n;
@@ -415,7 +421,8 @@ bool BitReader_ReadLengthB(BitReader *bits, uint32 *v) {
   unsigned long bitresult;
   int n;
   uint32 rv;
-  _BitScanReverse(&bitresult, bits->bits);
+  //_BitScanReverse(&bitresult, bits->bits);
+  bitresult = 32 - __builtin_clz(bits->bits) - 1;
   n = 31 - bitresult;
   if (n > 12) return false;
   bits->bitpos += n;
@@ -433,7 +440,8 @@ bool BitReader_ReadLengthB(BitReader *bits, uint32 *v) {
 int Log2RoundUp(uint32 v) {
   if (v > 1) {
     unsigned long idx;
-    _BitScanReverse(&idx, v - 1);
+    //_BitScanReverse(&idx, v - 1);
+    idx = 32 - __builtin_clz(v - 1) - 1;
     return idx + 1;
   } else {
     return 0;
@@ -831,7 +839,8 @@ int BitReader_ReadFluff(BitReader *bits, int num_symbols) {
 
   x *= 2;
 
-  _BitScanReverse(&y, x - 1);
+  //_BitScanReverse(&y, x - 1);
+  y = 32 - __builtin_clz(x - 1) - 1;
   y += 1;
 
   uint32 v = bits->bits >> (32 - y);
@@ -934,7 +943,8 @@ bool DecodeGolombRiceLengths(uint8 *dst, size_t size, BitReader2 *br) {
   if (!(v & 1)) {
     p--;
     unsigned long q;
-    _BitScanForward(&q, v);
+    //_BitScanForward(&q, v);
+    q = __builtin_ctz(v);
     bitpos = 8 - q;
   }
   br->p = p;

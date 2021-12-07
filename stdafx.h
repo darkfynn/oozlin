@@ -8,22 +8,17 @@
 #define _CRT_SECURE_NO_WARNINGS 1
 
 #include <stdio.h>
-#include <tchar.h>
 #include <stdlib.h>
 #include <string.h>
-#include <intrin.h>
 #include <assert.h>
-#include <Windows.h>
-
-#pragma warning (disable: 4244)
+#include <stdint.h>
 
 // TODO: reference additional headers your program requires here
-typedef unsigned char byte;
-typedef unsigned char uint8;
-typedef unsigned int uint32;
-typedef unsigned __int64 uint64;
-typedef signed __int64 int64;
-typedef signed int int32;
-typedef unsigned short uint16;
-typedef signed short int16;
-typedef unsigned int uint;
+typedef __uint8_t byte;
+typedef __uint8_t uint8;
+typedef __uint32_t uint32;
+typedef __uint64_t uint64;
+typedef __int64_t int64;
+typedef __int32_t int32;
+typedef __uint16_t uint16;
+typedef __int16_t int16;
