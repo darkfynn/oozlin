@@ -9,16 +9,9 @@
 
 # Precompiled Headers
 *.gch
-*.pch
 
 # Compiled Dynamic libraries
 *.so
-*.dylib
-*.dll
-
-# Fortran module files
-*.mod
-*.smod
 
 # Compiled Static libraries
 *.lai
@@ -34,6 +27,7 @@
 
 # Autotools files
 .deps
+Makefile
 Makefile.am
 Makefile.in
 aclocal.m4
@@ -41,5 +35,11 @@ autom4te.cache/
 config.status
 config.log
 configure.ac
+compile
+depcomp
+install-sh
+missing
 
+# Misc files
+*.swp
 

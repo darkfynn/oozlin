@@ -1,11 +1,8 @@
 // stdafx.h : includefile for standard system include files,
 // or project specific include files that are used frequently, but
 // are changed infrequently
-//
 
 #pragma once
-
-#define _CRT_SECURE_NO_WARNINGS 1
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,7 +10,8 @@
 #include <assert.h>
 #include <stdint.h>
 
-// TODO: reference additional headers your program requires here
+
+// Linux typedefs
 typedef __uint8_t byte;
 typedef __uint8_t uint8;
 typedef __uint32_t uint32;

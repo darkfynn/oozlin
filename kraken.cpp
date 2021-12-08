@@ -186,6 +186,15 @@ int Kraken_DecodeBytes(byte **output, const byte *src, const byte *src_end, int 
 int Kraken_GetBlockSize(const uint8 *src, const uint8 *src_end, int *dest_size, int dest_capacity);
 int Huff_ConvertToRanges(HuffRange *range, int num_symbols, int P, const uint8 *symlen, BitReader *bits);
 
+
+// A safe, efficient and portable 32bit _rotl() (originally: rotl32c()) C/C++ implementation for GCC by John Regehr,
+// Professor of Computer Science, University of Utah : // https://blog.regehr.org/archives/1063
+uint32_t _rotl(uint32_t x, uint32_t n)
+{
+  assert (n < 32);
+  return (x << n) | (x >> (-n & 31));
+}
+
 // Allocate memory with a specific alignment
 void *MallocAligned(size_t size, size_t alignment) {
   void *x = malloc(size + (alignment - 1) + sizeof(void*)), *x_org = x;
