@@ -11,6 +11,15 @@
 #include <stdint.h>
 
 
+// include file for x86 SSE2 types 
+// compile with -msse2 (instructions available)
+#ifdef __SSE2__
+#include <emmintrin.h>
+#else
+#warning SSE2 support is not available.
+#endif
+
+
 // Linux typedefs
 typedef __uint8_t byte;
 typedef __uint8_t uint8;
