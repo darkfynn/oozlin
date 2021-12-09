@@ -9,6 +9,7 @@
 #include <string.h>
 #include <assert.h>
 #include <stdint.h>
+#include <byteswap.h>
 
 
 // include file for x86 SSE2 types 
