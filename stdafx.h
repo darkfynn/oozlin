@@ -11,6 +11,7 @@
 #include <stdint.h>
 #include <byteswap.h>
 
+#define __forceinline __attribute__((always_inline))
 
 // include file for x86 SSE2 types 
 // compile with -msse2 (instructions available)
