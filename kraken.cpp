@@ -4225,9 +4225,9 @@ int ParseCmdLine(int argc, char *argv[]) {
         break;  // --
       }
       // long opts
-      if (!strcmp(s, "stdout")) s = "c";
-      else if (!strcmp(s, "decompress")) s = "d";
-      else if (!strcmp(s, "compress")) s = "z";
+      if (!strcmp(s, "stdout")) s = (char *)"c";
+      else if (!strcmp(s, "decompress")) s = (char *)"d";
+      else if (!strcmp(s, "compress")) s = (char *)"z";
       else if (!strncmp(s, "verify=",7)) {
         verifyfolder = s + 7;
         continue;
@@ -4237,11 +4237,11 @@ int ParseCmdLine(int argc, char *argv[]) {
       } else if (!strcmp(s, "dll")) {
         arg_dll = true;
         continue;
-      } else if (!strcmp(s, "kraken")) s = "mk";
-      else if (!strcmp(s, "mermaid")) s = "mm";
-      else if (!strcmp(s, "selkie")) s = "ms";
-      else if (!strcmp(s, "leviathan")) s = "ml";
-      else if (!strcmp(s, "hydra")) s = "mh";
+      } else if (!strcmp(s, "kraken")) s = (char *)"mk";
+      else if (!strcmp(s, "mermaid")) s = (char *)"mm";
+      else if (!strcmp(s, "selkie")) s = (char *)"ms";
+      else if (!strcmp(s, "leviathan")) s = (char *)"ml";
+      else if (!strcmp(s, "hydra")) s = (char *)"mh";
       else if (!strncmp(s, "level=", 6)) {
         arg_level = atoi(s + 6);
         continue;
