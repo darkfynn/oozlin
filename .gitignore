@@ -40,6 +40,12 @@ depcomp
 install-sh
 missing
 
+
+# CMake files/dirs 
+build/
+
+
+
 # Misc files
 *.swp
 
