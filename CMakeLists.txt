@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.12)
 
 # Set the project name and version
-project(ooz-linux VERSION 1.0)
+project(oozlin VERSION 1.0)
 find_package(Threads REQUIRED)
 
 # Specify the C++ standard
@@ -13,5 +13,5 @@ option(BUILD_SHARED_LIBS "" OFF)
 add_subdirectory(linoodle)
 set(BUILD_SHARED_LIBS ON)
 
-# Build ooz-linux
-add_executable(ooz-linux bitknit.cpp kraken.cpp lzna.cpp stdafx.cpp)
+# Build oozlin
+add_executable(oozlin bitknit.cpp huff.cpp kraken.cpp kraken_bits leviathan.cpp lzna.cpp main.cpp stdafx.cpp utilities.cp)
