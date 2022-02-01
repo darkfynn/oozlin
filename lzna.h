@@ -16,6 +16,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 
+#include "stdafx.h"
+
+
+typedef uint16_t LznaBitModel;
+
 // State for a 4-bit value RANS model
 struct LznaNibbleModel {
     uint16_t prob[17];

@@ -17,25 +17,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "utilities.h"
 
-// Global Vars
-enum {
-    kCompressor_Kraken = 8,
-    kCompressor_Mermaid = 9,
-    kCompressor_Selkie = 11, 
-    kCompressor_Hydra = 12, 
-    kCompressor_Leviathan = 13, 
-};
-
-bool arg_stdout;
-bool arg_force;
-bool arg_quiet;
-bool arg_dll;
-int arg_compressor = kCompressor_Kraken,
-int arg_level = 4;
-char arg_direction;
-char *verifyfolder;
-
-
 
 
 // CountLeadingZeros()
@@ -112,7 +93,7 @@ uint32_t BSF(uint32_t x)
 
 
 // error()
-void error(const char *s, const char *curfile = NULL)
+void error(const char *s, const char *curfile)
 {
     if (curfile)
     {
@@ -149,155 +130,6 @@ byte *load_file(const char *filename, int *size)
     fclose(f);
     *size = packed_size;
     return input;
-}
-
-
-
-// ParseCmdLine()
-int ParseCmdLine(int argc, char *argv[])
-{
-    int i;
-    // parse command line
-    for (i = 1; i < argc; i++)
-    {
-        char *s = argv[i],
-        char *c;
-        if (*s != '-')
-        {
-            break;
-        }
-        if (*++s == '-')
-        {
-            if (*++s == 0)
-            {
-                i++;
-                break;  // --
-            }
-            // long opts
-            if (!strcmp(s, "stdout"))
-            {
-                s = (char *)"c";
-            }
-            else if (!strcmp(s, "decompress"))
-            {
-                s = (char *)"d";
-            }
-            else if (!strcmp(s, "compress"))
-            {
-                s = (char *)"z";
-            }
-            else if (!strncmp(s, "verify=",7))
-            {
-                verifyfolder = s + 7;
-                continue;
-            } else if (!strcmp(s, "verify")) {
-                arg_direction = 't';
-                continue;
-            } else if (!strcmp(s, "dll"))
-            {
-                arg_dll = true;
-                continue;
-            } else if (!strcmp(s, "kraken"))
-            {
-                s = (char *)"mk";
-            }
-            else if (!strcmp(s, "mermaid"))
-            {
-                s = (char *)"mm";
-            }
-            else if (!strcmp(s, "selkie"))
-            {
-                s = (char *)"ms";
-            }
-            else if (!strcmp(s, "leviathan"))
-            {
-                s = (char *)"ml";
-            }
-            else if (!strcmp(s, "hydra"))
-            {
-                s = (char *)"mh";
-            }
-            else if (!strncmp(s, "level=", 6))
-            {
-                arg_level = atoi(s + 6);
-                continue;
-            }
-            else
-            {
-                return -1;
-            }
-        }
-        // short opt
-        do {
-            switch (c = *s++) {
-            case 'z':
-            case 'd':
-            case 'b':
-                if (arg_direction)
-                {
-                    return -1;
-                }
-                arg_direction = c;
-                break;
-            case 'c':
-                arg_stdout = true;
-                break;
-            case 'f':
-                arg_force = true;
-                break;
-            case 'q':
-                arg_quiet = true;
-                break;
-            case '1': case '2': case '3': case '4':
-            case '5': case '6': case '7': case '8': case '9':
-                arg_level = c - '0';
-                break;
-            case 'm':
-                c = *s++;
-                arg_compressor = (c == 'k') ? kCompressor_Kraken :
-                                 (c == 'm') ? kCompressor_Mermaid :
-                                 (c == 's') ? kCompressor_Selkie :
-                                 (c == 'l') ? kCompressor_Leviathan :
-                                 (c == 'h') ? kCompressor_Hydra : -1;
-                if (arg_compressor < 0)
-                {
-                    return -1;
-                }
-                break;
-            default:
-                return -1;
-            }
-        } while (*s);
-    }
-    return i;
-}
-
-
-
-// Verify()
-bool Verify(const char *filename, uint8_t *output, int outbytes, const char *curfile)
-{
-    int test_size;
-    byte *test = load_file(filename, &test_size);
-    if (!test)
-    {
-        fprintf(stderr, "file open error: %s\n", filename);
-        return false;
-    }
-    if (test_size != outbytes)
-    {
-        fprintf(stderr, "%s: ERROR: File size difference: %d vs %d\n", filename, outbytes, test_size);
-        return false;
-    }
-    for (int i = 0; i != test_size; i++)
-    {
-        if (test[i] != output[i])
-        {
-            fprintf(stderr, "%s: ERROR: File difference at 0x%x. Was %d instead of %d\n", curfile, i, output[i], test[i]);
-            return false;
-        }
-    }
-    return true;
 }
 
 

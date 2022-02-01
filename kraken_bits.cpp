@@ -17,6 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 #include "kraken_bits.h"
+#include "utilities.h"
 
 
 
@@ -391,7 +392,7 @@ int BitReader_ReadFluff(BitReader *bits, int num_symbols)
 // DecodeGolombRiceLengths()
 bool DecodeGolombRiceLengths(uint8_t *dst, size_t size, BitReader2 *br)
 {
-    const uint8_t *p = br->p,
+    const uint8_t *p = br->p;
     const uint8_t *p_end = br->p_end;
     uint8_t *dst_end = dst + size;
     if (p >= p_end)

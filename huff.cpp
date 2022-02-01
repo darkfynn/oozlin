@@ -16,6 +16,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "huff.h"
+#include "utilities.h"
 
 // Huff_ReadCodeLengthsOld()
 int Huff_ReadCodeLengthsOld(BitReader *bits, uint8_t *syms, uint32_t *code_prefix)

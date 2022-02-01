@@ -19,16 +19,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #define ALIGN_POINTER(p, align) ((uint8*)(((uintptr_t)(p) + (align - 1)) & ~(align - 1)))
 #define ALIGN_16(x) (((x)+15)&~15)
-#define COPY_64(d, s) {*(uint64_t*)(d) = *(uint64_t*)(s); }
-#define COPY_64_BYTES(d, s) {                                                 \
-        _mm_storeu_si128((__m128i*)d + 0, _mm_loadu_si128((__m128i*)s + 0));  \
-        _mm_storeu_si128((__m128i*)d + 1, _mm_loadu_si128((__m128i*)s + 1));  \
-        _mm_storeu_si128((__m128i*)d + 2, _mm_loadu_si128((__m128i*)s + 2));  \
-        _mm_storeu_si128((__m128i*)d + 3, _mm_loadu_si128((__m128i*)s + 3));  \
-}
 
-#define COPY_64_ADD(d, s, t) _mm_storel_epi64((__m128i *)(d), _mm_add_epi8(_mm_loadl_epi64((__m128i *)(s)), _mm_loadl_epi64((__m128i *)(t))))
-
+#if defined(_M_X64)
+#define LIBNAME "oo2ext_7_win64.dll"
+#else
+#define LIBNAME "oo2ext_7_win32.dll"
+#endif
 
 
 // static var
@@ -65,6 +61,21 @@ template<typename T> void SimpleSort(T *p, T *pend) {
 
 
 
+//typedef size_t (*OodleLZ_CompressFunc)(int codec, uint8_t *src_buf, size_t src_len,
+//                                       uint8_t *dst_buf, int level, void *opts,
+//                                       size_t offs, size_t unused, void *scratch,
+//                                       size_t scratch_size
+//                                      );
+
+//typedef size_t (*OodleLZ_DecompressFunc)(uint8_t* srcBuf, size_t srcLen,
+//                                       uint8_t* dstBuf, size_t dstLen,
+//                                       int64_t unk1, int64_t unk2, int64_t unk3,
+//                                       int64_t unk4, int64_t unk5, int64_t unk6,
+//                                       int64_t unk7, int64_t unk8, int64_t unk9,
+//                                       int64_t unk10
+//                                      );
+
+
 struct TansData {
     uint32_t A_used;
     uint32_t B_used;
@@ -99,37 +110,6 @@ struct TansDecoderParams {
   uint32_t state_4;
 };
 
-
-
-// Header in front of each 256k block
-typedef struct KrakenHeader {
-    // Type of decoder used, 6 means kraken
-    int decoder_type;
-
-    // Whether to restart the decoder
-    bool restart_decoder;
-
-    // Whether this block is uncompressed
-    bool uncompressed;
-
-    // Whether this block uses checksums.
-    bool use_checksums;
-} KrakenHeader;
-
-
-// Additional header in front of each 256k block ("quantum").
-typedef struct KrakenQuantumHeader {
-    // The compressed size of this quantum. If this value is 0 it means
-    // the quantum is a special quantum such as memset.
-    uint32_t compressed_size;
-    // If checksums are enabled, holds the checksum.
-    uint32_t checksum;
-    // Two flags
-    uint8_t flag1;
-    uint8_t flag2;
-    // Whether the whole block matched a previous block
-    uint32_t whole_match_distance;
-} KrakenQuantumHeader;
 
 
 // Kraken decompression happens in two phases, first one decodes
@@ -209,7 +189,7 @@ bool Kraken_UnpackOffsets(const byte *src, const byte *src_end,
 bool Kraken_ReadLzTable(int mode,
                         const byte *src, const byte *src_end,
                         byte *dst, int dst_size, int offset,
-                        byte *scratch, byte *scratch_end, KrakenLzTable *lztable)
+                        byte *scratch, byte *scratch_end, KrakenLzTable *lztable);
 bool Kraken_ProcessLzRuns_Type0(KrakenLzTable *lzt, byte *dst, byte *dst_end, byte *dst_start);
 bool Kraken_ProcessLzRuns_Type1(KrakenLzTable *lzt, byte *dst, byte *dst_end, byte *dst_start);
 bool Kraken_ProcessLzRuns(int mode, byte *dst, int dst_size, int offset, KrakenLzTable *lztable);

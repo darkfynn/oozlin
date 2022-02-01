@@ -17,6 +17,169 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 #include "utilities.h"
+#include "kraken.h"
+#include "stdafx.h"
+
+
+
+bool arg_stdout;
+bool arg_force;
+bool arg_quiet;
+bool arg_dll;
+int arg_compressor = kCompressor_Kraken;
+int arg_level = 4;
+char arg_direction;
+char *verifyfolder;
+
+
+
+// ParseCmdLine()
+int ParseCmdLine(int argc, char *argv[])
+{
+    int i;
+    // parse command line
+    for (i = 1; i < argc; i++)
+    {
+        char *s = argv[i];
+        char c;
+        if (*s != '-')
+        {
+            break;
+        }
+        if (*++s == '-')
+        {
+            if (*++s == 0)
+            {
+                i++;
+                break;  // --
+            }
+            // long opts
+            if (!strcmp(s, "stdout"))
+            {
+                s = (char *)"c";
+            }
+            else if (!strcmp(s, "decompress"))
+            {
+                s = (char *)"d";
+            }
+            else if (!strcmp(s, "compress"))
+            {
+                s = (char *)"z";
+            }
+            else if (!strncmp(s, "verify=",7))
+            {
+                verifyfolder = s + 7;
+                continue;
+            } else if (!strcmp(s, "verify")) {
+                arg_direction = 't';
+                continue;
+            } else if (!strcmp(s, "dll"))
+            {
+                arg_dll = true;
+                continue;
+            } else if (!strcmp(s, "kraken"))
+            {
+                s = (char *)"mk";
+            }
+            else if (!strcmp(s, "mermaid"))
+            {
+                s = (char *)"mm";
+            }
+            else if (!strcmp(s, "selkie"))
+            {
+                s = (char *)"ms";
+            }
+            else if (!strcmp(s, "leviathan"))
+            {
+                s = (char *)"ml";
+            }
+            else if (!strcmp(s, "hydra"))
+            {
+                s = (char *)"mh";
+            }
+            else if (!strncmp(s, "level=", 6))
+            {
+                arg_level = atoi(s + 6);
+                continue;
+            }
+            else
+            {
+                return -1;
+            }
+        }
+        // short opt
+        do {
+            switch (c = *s++) {
+            case 'z':
+            case 'd':
+            case 'b':
+                if (arg_direction)
+                {
+                    return -1;
+                }
+                arg_direction = c;
+                break;
+            case 'c':
+                arg_stdout = true;
+                break;
+            case 'f':
+                arg_force = true;
+                break;
+            case 'q':
+                arg_quiet = true;
+                break;
+            case '1': case '2': case '3': case '4':
+            case '5': case '6': case '7': case '8': case '9':
+                arg_level = c - '0';
+                break;
+            case 'm':
+                c = *s++;
+                arg_compressor = (c == 'k') ? kCompressor_Kraken :
+                                 (c == 'm') ? kCompressor_Mermaid :
+                                 (c == 's') ? kCompressor_Selkie :
+                                 (c == 'l') ? kCompressor_Leviathan :
+                                 (c == 'h') ? kCompressor_Hydra : -1;
+                if (arg_compressor < 0)
+                {
+                    return -1;
+                }
+                break;
+            default:
+                return -1;
+            }
+        } while (*s);
+    }
+    return i;
+}
+
+
+
+// Verify()
+bool Verify(const char *filename, uint8_t *output, int outbytes, const char *curfile)
+{
+    int test_size;
+    byte *test = load_file(filename, &test_size);
+    if (!test)
+    {
+        fprintf(stderr, "file open error: %s\n", filename);
+        return false;
+    }
+    if (test_size != outbytes)
+    {
+        fprintf(stderr, "%s: ERROR: File size difference: %d vs %d\n", filename, outbytes, test_size);
+        return false;
+    }
+    for (int i = 0; i != test_size; i++)
+    {
+        if (test[i] != output[i])
+        {
+            fprintf(stderr, "%s: ERROR: File difference at 0x%x. Was %d instead of %d\n", curfile, i, output[i], test[i]);
+            return false;
+        }
+    }
+    return true;
+}
+
 
 
 
@@ -24,9 +187,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 int main(int argc, char *argv[])
 {
 
-    __int64 start;
-    __int64 end;
-    __int64 freq;
+    void *oodleLib;
+    __int64_t start;
+    __int64_t end;
+    __int64_t freq;
     int argi;
 
     if (argc < 2 || (argi = ParseCmdLine(argc, argv)) < 0 ||
@@ -35,11 +199,11 @@ int main(int argc, char *argv[])
         arg_direction == 't' && (argc - argi) != 2              // missing argument for verify
         )
     {
-        fprintf(stderr, "ooz v7.0\n\n"
-        "Usage: ooz [options] input [output]\n"
+        fprintf(stderr, "oozlin v0.1.0\n\n"
+        "Usage: oozlin [options] input [output]\n"
         " -c --stdout              write to stdout\n"
         " -d --decompress          decompress (default)\n"
-        " -z --compress            compress (requires oo2core_7_win64.dll)\n"
+        " -z --compress            compress (requires oo2ext_7_win64.dll)\n"
         " -b                       just benchmark, don't overwrite anything\n"
         " -f                       force overwrite existing file\n"
         " --dll                    decompress with the dll\n"
@@ -68,27 +232,51 @@ int main(int argc, char *argv[])
 
     int nverify = 0;
 
+    // load linoodle lib
+    oodleLib = dlopen("libs/liblinoodle.so", RTLD_LAZY);
+    if (oodleLib == nullptr)
+    {
+        fprintf(stderr, "Can't load library: %s\n", dlerror());
+    }
+    else
+    {
+        fprintf(stdout, "Library is loaded..\n");
+    }
+
+    // reset errors
+    dlerror();
+
+    // load symbols
+    auto OodLZ_Compress   = reinterpret_cast<OodleLZ_CompressFunc>(dlsym(oodleLib, "OodleLZ_Compress"));
+    auto OodLZ_Decompress = reinterpret_cast<OodleLZ_DecompressFunc>(dlsym(oodleLib, "OodleLZ_Decompress"));
+    if (!OodLZ_Compress || !OodLZ_Decompress)
+    {
+        error("error loading", LIBNAME);
+    }
+
+
     for (; argi < argc; argi++)
     {
         const char *curfile = argv[argi];
+        timeval t1, t2;
 
         int input_size;
         byte *input = load_file(curfile, &input_size);
 
         byte *output = NULL;
-        int outbytes = 0;
+        size_t outbytes = 0;
+
 
         if (arg_direction == 'z')
         {
-            // compress using the dll
-            LoadLib();
+            // compress using the .so wrapped dll
             output = new byte[input_size + 65536];
             if (!output)
             {
                 error("memory error", curfile);
             }
             *(uint64*)output = input_size;
-            QueryPerformanceCounter((LARGE_INTEGER*)&start);
+            gettimeofday(&t1, NULL);
             outbytes = OodLZ_Compress(arg_compressor, input, input_size,
                                       output + 8, arg_level, 0, 0, 0, 0, 0);
             if (outbytes < 0)
@@ -96,9 +284,8 @@ int main(int argc, char *argv[])
                 error("compress failed", curfile);
             }
             outbytes += 8;
-            QueryPerformanceCounter((LARGE_INTEGER*)&end);
-            QueryPerformanceFrequency((LARGE_INTEGER*)&freq);
-            double seconds = (double)(end - start) / freq;
+            gettimeofday(&t2, NULL);
+            double seconds = t2.tv_sec - t1.tv_sec;
             if (!arg_quiet)
             {
                 fprintf(stderr, "%-20s: %8d => %8ld (%.2f seconds, %.2f MB/s)\n",
@@ -108,11 +295,6 @@ int main(int argc, char *argv[])
         }
         else
         {
-            if (arg_dll)
-            {
-                LoadLib();
-            }
-
             // stupidly attempt to autodetect if file uses 4-byte or 8-byte header,
             // the previous version of this tool wrote a 4-byte header.
             int hdrsize = *(uint64*)input >= 0x10000000000 ? 4 : 8;
@@ -130,7 +312,7 @@ int main(int argc, char *argv[])
                 error("memory error", curfile);
             }
 
-            QueryPerformanceCounter((LARGE_INTEGER*)&start);
+            gettimeofday(&t1, NULL);
 
             if (arg_dll)
             {
@@ -146,10 +328,8 @@ int main(int argc, char *argv[])
                 error("decompress error", curfile);
             }
 
-            QueryPerformanceCounter((LARGE_INTEGER*)&end);
-            QueryPerformanceFrequency((LARGE_INTEGER*)&freq);
-            double seconds = (double)(end - start) / freq;
-
+            gettimeofday(&t2, NULL);
+            double seconds = t2.tv_sec - t1.tv_sec;
             if (!arg_quiet)
             {
                 fprintf(stderr, "%-20s: %8d => %8lld (%.2f seconds, %.2f MB/s)\n",

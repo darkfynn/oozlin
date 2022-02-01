@@ -15,30 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ------------------------------------------------------------------------------
 */
 
-
-
-typedef struct BitReader {
-
-    // |p| holds the current byte and |p_end| the end of the buffer.
-    const byte *p;
-    const byte *p_end;
-
-    // Bits accumulated so far
-    uint32_t bits;
-
-    // Next byte will end up in the |bitpos| position in |bits|.
-    int bitpos;
-
-} BitReader;
-
-
-
-struct BitReader2 {
-    const uint8_t *p;
-    const uint8_t *p_end;
-    uint32_t bitpos;
-};
-
+#include "stdafx.h"
 
 
 // static

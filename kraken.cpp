@@ -15,23 +15,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ------------------------------------------------------------------------------
 */
 
+#include "huff.h"
 #include "kraken.h"
 #include "utilities.h"
-#include "kraken_bits.h"
+#include "lzna.h"
+#include "bitknit.h"
+#include "mermaid.h"
+#include "leviathan.h"
 
-
-
-// Log2RoundUp() XXX NOT USED
-//int Log2RoundUp(uint32 v) {
-//  if (v > 1) {
-//    unsigned long idx;
-//    //_BitScanReverse(&idx, v - 1);
-//    idx = 32 - __builtin_clz(v - 1) - 1;
-//    return idx + 1;
-//  } else {
-//    return 0;
-//  }
-//}
 
 
 // Kraken_Create()
@@ -1061,7 +1052,7 @@ bool Tans_DecodeTable(BitReader *bits, int L_bits, TansData *tans_data)
         memset(seen, 0, sizeof(seen));
         uint32_t L = 1 << L_bits;
 
-        tint count = BitReader_ReadBitsNoRefill(bits, 3) + 1;
+        int count = BitReader_ReadBitsNoRefill(bits, 3) + 1;
 
         int bits_per_sym = BSR(L_bits) + 1;
         int max_delta_bits = BitReader_ReadBitsNoRefill(bits, bits_per_sym);

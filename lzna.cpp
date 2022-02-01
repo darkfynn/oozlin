@@ -21,8 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "lzna.h"
 
 
-typedef uint16_t LznaBitModel;
-
 
 static LznaNibbleModel lzna_initializer_4bit = {
     0x0, 0x800, 0x1000, 0x1800, 0x2000, 0x2800, 0x3000, 0x3800, 0x4000, 0x4800,
@@ -258,7 +256,8 @@ static uint32_t __forceinline LznaReadNibble(LznaBitReader *tab, LznaNibbleModel
     c0 = _mm_cmpgt_epi16(t0, t);
     c1 = _mm_cmpgt_epi16(t1, t);
 
-    _BitScanForward(&bitindex, _mm_movemask_epi8(_mm_packs_epi16(c0, c1)) | 0x10000);
+    //_BitScanForward(&bitindex, _mm_movemask_epi8(_mm_packs_epi16(c0, c1)) | 0x10000);
+    bitindex = __builtin_ctz(_mm_movemask_epi8(_mm_packs_epi16(c0, c1)) | 0x10000);
     start = model->prob[bitindex - 1];
     end = model->prob[bitindex];
 
@@ -297,7 +296,8 @@ static uint32_t __forceinline LznaRead3bit(LznaBitReader *tab, Lzna3bitModel *mo
     t = _mm_shuffle_epi32(_mm_unpacklo_epi16(t, t), 0);
     c0 = _mm_cmpgt_epi16(t0, t);
 
-    _BitScanForward(&bitindex, _mm_movemask_epi8(c0) | 0x10000);
+    //_BitScanForward(&bitindex, _mm_movemask_epi8(c0) | 0x10000);
+    bitindex = __builtin_ctz(_mm_movemask_epi8(c0) | 0x10000);
     bitindex >>= 1;
     start = model->prob[bitindex - 1];
     end = model->prob[bitindex];

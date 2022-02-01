@@ -15,33 +15,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ------------------------------------------------------------------------------
 */
 
-
-struct HuffRevLut {
-    uint8_t bits2len[2048];
-    uint8_t bits2sym[2048];
-};
-
-
-typedef struct HuffReader {
-
-    // Array to hold the output of the huffman read array operation
-    byte *output;
-    byte *output_end;
-
-    // We decode three parallel streams, two forwards, |src| and |src_mid|
-    // while |src_end| is decoded backwards.
-    const byte *src;
-    const byte *src_mid;
-    const byte *src_end;
-    const byte *src_mid_org;
-    int src_bitpos;
-    int src_mid_bitpos;
-    int src_end_bitpos;
-    uint32_t src_bits;
-    uint32_t src_mid_bits;
-    uint32_t src_end_bits;
-
-} HuffReader;
+#include "stdafx.h"
+#include "kraken_bits.h"
 
 
 struct HuffRange {
