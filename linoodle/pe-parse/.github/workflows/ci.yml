@@ -1,0 +1,134 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+  schedule:
+    # run CI every day even if no PRs/merges occur
+    - cron:  '0 12 * * *'
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-format-9
+
+      - name: lint
+        run: |
+          mkdir build && cd build
+          cmake ..
+          cmake --build . --target peparse_format
+          cd .. && git diff --exit-code
+
+  pe-parse:
+    strategy:
+      matrix:
+        platform: ["ubuntu-latest", "macos-latest"]
+        build-type: ["Debug", "Release"]
+        build-shared: ["0", "1"]
+        compiler:
+        - { CC: "clang", CXX: "clang++" }
+        - { CC: "gcc", CXX: "g++" }
+        exclude:
+        - platform: macos-latest
+          compiler: { CC: "gcc", CXX: "g++" }
+    runs-on: ${{ matrix.platform }}
+    steps:
+    - uses: actions/checkout@v2
+    - name: build
+      env:
+        CC: ${{ matrix.compiler.CC }}
+        CXX: ${{ matrix.compiler.CXX }}
+      run: |
+        mkdir build
+        cd build
+        cmake \
+          -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} \
+          -DBUILD_SHARED_LIBS=${{ matrix.build-shared }} \
+          ..
+        cmake --build .
+    - name: test
+      run: |
+        ./build/dump-pe/dump-pe ./test/assets/example.exe
+
+  pepy:
+    strategy:
+      matrix:
+        platform: ["ubuntu-latest", "macos-latest"]
+        python:
+          - "3.6"
+          - "3.7"
+          - "3.8"
+    runs-on: ${{ matrix.platform }}
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python }}
+    - name: build
+      run: |
+        python3 setup.py build
+    - name: sdist and install
+      run: |
+        python3 setup.py sdist
+        python3 -m pip install --user dist/*.tar.gz
+    - name: test
+      run: |
+        python3 test/test_pepy.py test/assets/example.exe
+
+  pe-parse-windows:
+    strategy:
+      matrix:
+        build-arch: ["x64", "Win32"]
+        build-type: ["Debug", "Release"]
+        build-shared: ["0", "1"]
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: build
+      run: |
+        mkdir build
+        cd build
+        cmake `
+          -G "Visual Studio 16 2019" `
+          -A ${{ matrix.build-arch }} `
+          -DBUILD_SHARED_LIBS=${{ matrix.build-shared }} `
+          ..
+        cmake --build . --config ${{ matrix.build-type }}
+    - name: install
+      run: |
+        cd build
+        cmake --build . --target install
+    - name: test
+      run: |
+        .\build\bin\dump-pe.exe .\test\assets\example.exe
+
+  pepy-windows:
+    strategy:
+      matrix:
+        python:
+          - "3.6"
+          - "3.7"
+          - "3.8"
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python }}
+    - name: build
+      run: |
+        python setup.py build
+    - name: install
+      run: |
+        python -m pip install --user .
+    - name: test
+      run: |
+        python test/test_pepy.py test/assets/example.exe
