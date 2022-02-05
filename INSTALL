@@ -1,2 +1,4 @@
-./configure 
-./make
+
+Run build.sh:
+
+./build.sh
