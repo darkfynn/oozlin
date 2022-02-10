@@ -22,7 +22,9 @@ Usage: oozlin [options] input [output]
 (Warning! not fuzz safe, so please trust the input)
 ```
 
-#### Build:
+#### Build
+
+Oodle .dll must be in root directory before running build script.
 
 ```
 $ ./build.sh
