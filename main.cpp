@@ -188,9 +188,8 @@ int main(int argc, char *argv[])
 {
 
     void *oodleLib;
-    __int64_t start;
-    __int64_t end;
-    __int64_t freq;
+    clock_t start;
+    clock_t end;
     int argi;
 
     if (argc < 2 || (argi = ParseCmdLine(argc, argv)) < 0 ||
@@ -258,7 +257,6 @@ int main(int argc, char *argv[])
     for (; argi < argc; argi++)
     {
         const char *curfile = argv[argi];
-        timeval t1, t2;
 
         int input_size;
         byte *input = load_file(curfile, &input_size);
@@ -276,7 +274,7 @@ int main(int argc, char *argv[])
                 error("memory error", curfile);
             }
             *(uint64*)output = input_size;
-            gettimeofday(&t1, NULL);
+            start = clock();
             outbytes = OodLZ_Compress(arg_compressor, input, input_size,
                                       output + 8, arg_level, 0, 0, 0, 0, 0);
             if (outbytes < 0)
@@ -284,13 +282,13 @@ int main(int argc, char *argv[])
                 error("compress failed", curfile);
             }
             outbytes += 8;
-            gettimeofday(&t2, NULL);
-            double seconds = t2.tv_sec - t1.tv_sec;
+            end = clock();
+            double seconds = (double)(end - start) / (int64_t)CLOCKS_PER_SEC;
             if (!arg_quiet)
             {
-                fprintf(stderr, "%-20s: %8d => %8ld (%.2f seconds, %.2f MB/s)\n",
+                fprintf(stderr, "%-20s: %8d => %8ld (%.6f seconds, %.6f MB/s)\n",
                         argv[argi], input_size, outbytes, seconds,
-                        input_size * 1e-6 / seconds);
+                        (input_size * 1e-6) / seconds);
             }
         }
         else
@@ -312,8 +310,7 @@ int main(int argc, char *argv[])
                 error("memory error", curfile);
             }
 
-            gettimeofday(&t1, NULL);
-
+            start = clock();
             if (arg_dll)
             {
                 outbytes = OodLZ_Decompress(input + hdrsize, input_size - hdrsize, output, unpacked_size, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
@@ -328,13 +325,13 @@ int main(int argc, char *argv[])
                 error("decompress error", curfile);
             }
 
-            gettimeofday(&t2, NULL);
-            double seconds = t2.tv_sec - t1.tv_sec;
+            end = clock();
+            double seconds = (double)(end - start) / (int64_t)CLOCKS_PER_SEC;
             if (!arg_quiet)
             {
-                fprintf(stderr, "%-20s: %8d => %8lld (%.2f seconds, %.2f MB/s)\n",
+                fprintf(stderr, "%-20s: %8d => %8lld (%.6f seconds, %.6f MB/s)\n",
                         argv[argi], input_size, unpacked_size, seconds,
-                        unpacked_size * 1e-6 / seconds);
+                        (unpacked_size * (float)1e-6) / seconds);
             }
         }
 
