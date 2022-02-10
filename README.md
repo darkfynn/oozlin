@@ -34,14 +34,14 @@ $ ./build.sh
 ```
 $ ./oozlin -d testdata/xml.kraken xml.kraken.out
 Library is loaded..
-testdata/xml.kraken :   484282 =>  5345280 (0.00 seconds, inf MB/s) 
+testdata/xml.kraken :   484282 =>  5345280 (0.008972 seconds, 595.773537 MB/s)
 ```
 
 #### Compress (using any available file):
 ```
 $ ./oozlin -z --kraken libreoffice.tar libreoffice.tar.K
 Library is loaded..
-libreoffice.tar     :    20480 =>     4554 (0.00 seconds, inf MB/s)
+libreoffice.tar     :    20480 =>     4554 (0.000701 seconds, 29.215407 MB/s)
 ```
 
 Note: Output filenames above were arbitrarily given. 
